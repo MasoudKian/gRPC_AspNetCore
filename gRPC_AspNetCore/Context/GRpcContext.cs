@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using gRPC_AspNetCore.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace gRPC_AspNetCore.Context
 {
@@ -8,5 +9,7 @@ namespace gRPC_AspNetCore.Context
         {
             
         }
+
+        public DbSet<Product> Products { get; set; }
     }
 }
