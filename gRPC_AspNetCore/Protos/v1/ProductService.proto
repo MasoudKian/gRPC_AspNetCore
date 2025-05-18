@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-option csharp_namespace = "gRPC_AspNetCore.Protos";
+package ProductService.v1;
+
+option csharp_namespace = "gRPC_AspNetCore.Protos.v1";
 
 
 import "google/protobuf/timestamp.proto";

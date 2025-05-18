@@ -2,11 +2,11 @@
 using Grpc.Core;
 using gRPC_AspNetCore.Context;
 using gRPC_AspNetCore.Models;
-using gRPC_AspNetCore.Protos;
+using gRPC_AspNetCore.Protos.v1;
 using Microsoft.EntityFrameworkCore;
-using static gRPC_AspNetCore.Protos.ProductService;
+using static gRPC_AspNetCore.Protos.v1.ProductService;
 
-namespace gRPC_AspNetCore.Services
+namespace gRPC_AspNetCore.Services.v1
 {
     public class ProductService
         (GRpcContext dbContext) : ProductServiceBase
@@ -30,7 +30,7 @@ namespace gRPC_AspNetCore.Services
 
             while (await requestStream.MoveNext())
             {
-                dbContext.Products.Add(new Models.Product()
+                dbContext.Products.Add(new Product()
                 {
                     CreatedDate = DateTime.Now,
                     Description = requestStream.Current.Description,
