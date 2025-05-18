@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package ProductService.v2;
+
+option csharp_namespace = "gRPC_AspNetCore.Protos.v2";
+
+
+import "google/protobuf/timestamp.proto";
+
+service ProductService {
+
+	// Bi-Directionaly Streaming
+	rpc CreateProduct (stream CreateProductRequest) returns (stream CreateProductReplay);
+
+	// Server Streaming
+	rpc GetAllProduct(GetAllProductRequest) returns (stream GetAllProductReplay);
+
+	rpc GetProductById(GetProductByIdRequest) returns (GetProductByIdReplay);
+
+
+}
+
+message CreateProductRequest{
+	string nameproduct = 1;
+	string description = 2;
+	double price = 3;
+}
+
+message CreateProductReplay{
+	int32 status =1;
+	string message = 2;
+	int32 createdItemCount=3;
+}
+
+message UpdateProductRequest{
+	int32 id = 1;
+	string nameproduct = 2;
+	string description = 3;
+	double price = 4;
+}
+
+message UpdateProductReplay{
+	int32 status =1;
+	string message = 2;
+	int32 updatedItemCount=3;
+}
+
+message RemoveProductRequest{
+	int32 id = 1;
+}
+message RemoveProductReply{
+	int32 status =1;
+	string message = 2;
+	int32 removedItemProduct=3;
+}
+
+message GetAllProductRequest{
+	int32 page = 1;
+	int32 take = 2;
+}
+
+message GetAllProductReplay{
+	int32 id = 1;
+	string nameproduct = 2;
+	string description = 3;
+	double price = 4;
+	google.protobuf.Timestamp createDate = 5;
+}
+
+message GetProductByIdRequest{
+	int32 id = 1;
+}
+message GetProductByIdReplay{
+	int32 id = 1;
+	string nameproduct = 2;
+	string description = 3;
+	double price = 4;
+	google.protobuf.Timestamp createDate = 5;
+}

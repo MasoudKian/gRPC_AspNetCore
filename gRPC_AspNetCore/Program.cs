@@ -29,7 +29,7 @@ var app = builder.Build();
 //app.MapGrpcService<ProductService>();
 
 app.MapGrpcService<gRPC_AspNetCore.Services.v1.ProductService>();
-//app.MapGrpcService<gRPC_AspNetCore.Services.v2.ProductService>();
+app.MapGrpcService<gRPC_AspNetCore.Services.v2.ProductService>();
 
 #region Continue for Reflection
 
