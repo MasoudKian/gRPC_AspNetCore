@@ -8,9 +8,12 @@ using static gRPC_AspNetCore.Protos.ProductService;
 
 namespace gRPC_AspNetCore.Services
 {
-    public class ProductService 
-        (GRpcContext dbContext): ProductServiceBase
+    public class ProductService
+        (GRpcContext dbContext) : ProductServiceBase
     {
+
+        //grpcui -plaintext localhost:5286
+
         /// <summary>
         /// Bi-Directional Streaming RPC //// Created Product
         /// </summary>
@@ -25,7 +28,7 @@ namespace gRPC_AspNetCore.Services
             // Create a new product and save it to the database
             int createdProducCount = 0;
 
-            while( await requestStream.MoveNext())
+            while (await requestStream.MoveNext())
             {
                 dbContext.Products.Add(new Models.Product()
                 {
@@ -33,7 +36,7 @@ namespace gRPC_AspNetCore.Services
                     Description = requestStream.Current.Description,
                     NameProduct = requestStream.Current.Nameproduct,
                     Price = requestStream.Current.Price,
-                    
+
                 });
                 createdProducCount++;
             }
@@ -65,13 +68,53 @@ namespace gRPC_AspNetCore.Services
                 return null;
             }
 
+            #region Send Response Headers 
+
+            ///////// زمان ارسال قبل از ارسال پیام اصلی از سمت کلاینت یا سروز
+            ///در ابتدای ارتباط ارسال میشن
+
+            Metadata headers = new()
+            {
+                { "fName", "Masoud"},
+                { "lName", "Kian" },
+                { "age", "36" }
+            };
+
+            await context.WriteResponseHeadersAsync(headers);
+
+            #endregion
+
+            #region Send Response Trailers
+
+            ////////بعد از ارسال همه پیام ها توسط سرور
+            /// پیام های ( unary , stream )
+            ///           
+
+            context.ResponseTrailers.Add("FName", "Masoud");
+            context.ResponseTrailers.Add("LName", "Kian");
+            context.ResponseTrailers.Add("Done", "GetProductById");
+            var trailers = new Metadata
+            {
+                { "key1", "value1" },
+                { "key2", "value2" }
+            };
+
+            //foreach (var entry in trailers)
+            //{
+            //    context.ResponseTrailers.Add(entry);
+            //}
+
+            context.ResponseTrailers.Clear();
+
+            #endregion
+
             return new GetProductByIdReplay()
             {
                 Id = product.Id,
                 Nameproduct = product.NameProduct,
                 Description = product.Description,
                 Price = product.Price,
-                CreateDate = Timestamp.FromDateTime(product.CreatedDate)
+                CreateDate = Timestamp.FromDateTime(DateTime.SpecifyKind(product.CreatedDate, DateTimeKind.Utc))
             };
         }
 
@@ -87,7 +130,7 @@ namespace gRPC_AspNetCore.Services
             , IServerStreamWriter<GetAllProductReplay> responseStream, ServerCallContext context)
         {
             int skip = (request.Page - 1) * request.Take;
-            List<Product> products =await  dbContext.Products
+            List<Product> products = await dbContext.Products
                 .Skip(skip)
                 .Take(request.Take)
                 .ToListAsync();
@@ -100,10 +143,10 @@ namespace gRPC_AspNetCore.Services
                     Nameproduct = product.NameProduct,
                     Description = product.Description,
                     Price = product.Price,
-                    CreateDate = Timestamp.FromDateTime(product.CreatedDate)
+                    CreateDate = Timestamp.FromDateTime(DateTime.SpecifyKind(product.CreatedDate, DateTimeKind.Utc))
                 });
             }
-           
+
         }
 
 
@@ -116,7 +159,7 @@ namespace gRPC_AspNetCore.Services
 
         public override async Task<UpdateProductReplay> UpdateProduct(UpdateProductRequest request, ServerCallContext context)
         {
-            
+
             Product? product = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == request.Id);
             if (product == null)
             {
@@ -127,12 +170,12 @@ namespace gRPC_AspNetCore.Services
                     UpdatedItemCount = 0,
                 };
             }
-                product.NameProduct = request.Nameproduct;
-                product.Description = request.Description;
-                product.Price = request.Price;
+            product.NameProduct = request.Nameproduct;
+            product.Description = request.Description;
+            product.Price = request.Price;
 
-                dbContext.Products.Update(product);
-                await dbContext.SaveChangesAsync();
+            dbContext.Products.Update(product);
+            await dbContext.SaveChangesAsync();
 
             return new UpdateProductReplay()
             {
@@ -153,13 +196,13 @@ namespace gRPC_AspNetCore.Services
             , ServerCallContext context)
         {
             int removedItemProduct = 0;
-            while ( await requestStream.MoveNext())
+            while (await requestStream.MoveNext())
             {
                 var product = dbContext.Products.FirstOrDefault(p => p.Id == requestStream.Current.Id);
-                if (product == null )
+                if (product == null)
                     continue;
 
-                else if(product != null)
+                else if (product != null)
                 {
                     dbContext.Products.Remove(product);
                     removedItemProduct++;
